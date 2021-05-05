@@ -12,6 +12,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.util.HashMap;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import java.awt.image.ConvolveOp;
@@ -24,20 +25,21 @@ public class CaptchaGenerator extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 7705192180138203617L;
 	public static final int WIDTH = 220; 
-	 public static final int HEIGHT = 60; 
+	 public static final int HEIGHT = 60;
+	
 	    public void doGet(HttpServletRequest request, HttpServletResponse response)
 	            throws ServletException, IOException {
 	        this.doPost(request, response);
 	    }
 	    public void doPost(HttpServletRequest request, HttpServletResponse response)
 	            throws ServletException, IOException {
-//	    	 String createTypeFlag = request.getParameter("createTypeFlag");
+
 	    	 BufferedImage bi = new BufferedImage(WIDTH, HEIGHT,BufferedImage.TYPE_INT_RGB);
 	    	 Graphics g = bi.getGraphics();
 	    	  Graphics2D g2dImage = (Graphics2D) bi.getGraphics();
 	    	 setBackGround(g);
 	         setBorder(g);
-	        // drawRandomLine(g);
+	
 	         Random randChars = new Random();
 	         for ( int i = 0; i < 15; i++ )
 	         {
@@ -59,8 +61,10 @@ public class CaptchaGenerator extends HttpServlet {
 			}
 	         }
 	    }
+	        
 	         String random = drawRandomNum((Graphics2D) g);
-	        drawRandomLine(g);
+	        
+	         drawRandomLine(g);
 	          
 	         drawThickLine(g,0,new Random().nextInt(HEIGHT)+1,WIDTH,new Random().nextInt(HEIGHT)+1,4,Color.BLACK);
 
@@ -73,7 +77,6 @@ public class CaptchaGenerator extends HttpServlet {
 	        	 bi = op.filter(bi, null);
 	         }
 
-	         request.getSession().setAttribute("checkcode", random);
 	         response.setContentType("image/jpeg");
 	         response.setDateHeader("expries", -1);
 	         response.setHeader("Cache-Control", "no-cache");
@@ -84,6 +87,7 @@ public class CaptchaGenerator extends HttpServlet {
 	    	 g.setColor(Color.WHITE);
 	    	 g.fillRect(0, 0, WIDTH, HEIGHT);
 	    }
+	   
 	    
 	    private void setBorder(Graphics g) {
 	    	 g.setColor(Color.BLACK);
@@ -138,6 +142,26 @@ public class CaptchaGenerator extends HttpServlet {
 	    	
 	        	 return createRandomChar(g, baseNumLetter);
 	         }
+	    private String createRandomChar(Graphics2D g,String baseChar) {
+	        StringBuffer sb = new StringBuffer();
+	        int x = 5;
+	        String ch ="";
+	        DataStorage data = new DataStorage();  
+	        
+	        for (int i = 0; i < 6; i++) {
+	        	int degree = new Random().nextInt() % 30;
+	            ch = baseChar.charAt(new Random().nextInt(baseChar.length())) + "";
+	            sb.append(ch);
+	            g.rotate(degree * Math.PI / 180, x, 20);
+	            g.drawString(ch, x, 42);
+	            g.rotate(-degree * Math.PI / 180, x, 20);
+	            x += 32;
+	        }
+	        data.putDataMap(sb.toString());
+	        return sb.toString();
+	    }
+	
+	        
 	    private void drawThickLine(Graphics g, int x1, int y1, int x2, int y2, 
 	    		   int thickness, Color c) { 
 
@@ -175,20 +199,4 @@ public class CaptchaGenerator extends HttpServlet {
 	    		  g.fillPolygon(xPoints, yPoints, 4); 
 	    		} 
 	         
-	    private String createRandomChar(Graphics2D g,String baseChar) {
-	        StringBuffer sb = new StringBuffer();
-	        int x = 5;
-	        String ch ="";
-	        for (int i = 0; i < 6; i++) {
-	        	int degree = new Random().nextInt() % 30;
-	            ch = baseChar.charAt(new Random().nextInt(baseChar.length())) + "";
-	            sb.append(ch);
-	            g.rotate(degree * Math.PI / 180, x, 20);
-	            g.drawString(ch, x, 42);
-	            g.rotate(-degree * Math.PI / 180, x, 20);
-	            x += 32;
-	        }
-	        return sb.toString();
-	    }
-	
-	        }
+}
